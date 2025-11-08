@@ -1,12 +1,16 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { DOMAINS } from '@/lib/constants/domains'
 
 export default function ApiDocsPage() {
-  const baseUrl = typeof window !== 'undefined' 
-    ? window.location.origin 
-    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005'
+  const [baseUrl, setBaseUrl] = useState(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005')
+  
+  useEffect(() => {
+    setBaseUrl(window.location.origin)
+  }, [])
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
