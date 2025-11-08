@@ -33,15 +33,18 @@ nvm list
 echo ""
 echo "Installing latest LTS version..."
 nvm install --lts
-nvm alias default 'lts/*'
 
 echo ""
 echo "Installing latest stable version..."
 nvm install node
 
 echo ""
-echo "Using LTS as default..."
-nvm use --lts
+echo "Setting latest version as default..."
+nvm alias default node
+
+echo ""
+echo "Switching to latest version..."
+nvm use node
 
 echo ""
 echo "Current Node version:"
