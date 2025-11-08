@@ -12,7 +12,6 @@ if [ ! -d "$NVM_DIR" ]; then
     echo "Installing nvm globally..."
     sudo mkdir -p "$NVM_DIR"
     sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | sudo NVM_DIR="$NVM_DIR" bash
-    sudo chmod -R 755 "$NVM_DIR"
 else
     echo "nvm is already installed globally"
     
@@ -22,6 +21,11 @@ else
     sudo git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)` 2>/dev/null || true
     cd -
 fi
+
+# Set ownership to current user for installation
+echo "Setting permissions for NVM directory..."
+sudo chown -R $(whoami):$(id -gn) "$NVM_DIR"
+sudo chmod -R 755 "$NVM_DIR"
 
 # Load nvm
 export NVM_DIR="$NVM_DIR"
