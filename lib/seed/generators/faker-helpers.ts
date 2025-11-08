@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 
-export function randomEnum<T extends string>(values: T[]): T {
-  return faker.helpers.arrayElement(values)
+export function randomEnum<T extends string>(values: readonly T[] | T[]): T {
+  return faker.helpers.arrayElement(values as T[])
 }
 
 export function randomDecimal(min: number, max: number, decimals: number = 2): number {
@@ -13,11 +13,11 @@ export function randomDate(start: Date, end: Date): Date {
 }
 
 export function randomPastDate(days: number = 365): Date {
-  return faker.date.past({ days })
+  return faker.date.past({ years: days / 365 })
 }
 
 export function randomFutureDate(days: number = 365): Date {
-  return faker.date.future({ days })
+  return faker.date.future({ years: days / 365 })
 }
 
 export function randomPercentage(): number {
