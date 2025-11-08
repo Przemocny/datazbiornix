@@ -41,7 +41,7 @@ export function degradeRecord<T extends Record<string, any>>(
 
     // Missing values
     if (shouldApplyDegradation(config.missingValueProbability)) {
-      degraded[key] = makeMissing(value)
+      ;(degraded as any)[key] = makeMissing(value)
       continue
     }
 
@@ -53,50 +53,50 @@ export function degradeRecord<T extends Record<string, any>>(
     // Field-specific corruptions
     if (key.includes('email') || key.endsWith('Email')) {
       if (shouldApplyDegradation(config.formatErrorProbability)) {
-        degraded[key] = corruptEmail(value)
+        ;(degraded as any)[key] = corruptEmail(value)
         continue
       }
     }
 
     if (key.includes('phone') || key.endsWith('Phone')) {
       if (shouldApplyDegradation(config.formatErrorProbability)) {
-        degraded[key] = corruptPhoneNumber(value)
+        ;(degraded as any)[key] = corruptPhoneNumber(value)
         continue
       }
     }
 
     if (value instanceof Date || key.includes('date') || key.includes('Date')) {
       if (shouldApplyDegradation(config.formatErrorProbability)) {
-        degraded[key] = corruptDate(value)
+        ;(degraded as any)[key] = corruptDate(value)
         continue
       }
       if (shouldApplyDegradation(config.outOfRangeProbability)) {
-        degraded[key] = makeOutOfRange(key, value)
+        ;(degraded as any)[key] = makeOutOfRange(key, value)
         continue
       }
     }
 
     if (typeof value === 'number') {
       if (shouldApplyDegradation(config.wrongTypeProbability)) {
-        degraded[key] = corruptNumber(value)
+        ;(degraded as any)[key] = corruptNumber(value)
         continue
       }
       if (shouldApplyDegradation(config.outOfRangeProbability)) {
-        degraded[key] = makeOutOfRange(key, value)
+        ;(degraded as any)[key] = makeOutOfRange(key, value)
         continue
       }
     }
 
     if (typeof value === 'string') {
       if (shouldApplyDegradation(config.formatErrorProbability)) {
-        degraded[key] = corruptString(value)
+        ;(degraded as any)[key] = corruptString(value)
         continue
       }
     }
 
     if (typeof value === 'boolean') {
       if (shouldApplyDegradation(config.wrongTypeProbability)) {
-        degraded[key] = corruptBoolean(value)
+        ;(degraded as any)[key] = corruptBoolean(value)
         continue
       }
     }
