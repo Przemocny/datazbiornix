@@ -13,12 +13,42 @@ Aplikacja edukacyjna dostarczająca realistyczne dane biznesowe z 7 działów w 
 
 ## 🚀 Szybki Start
 
-### Wymagania
+### ⚡ Automatyczna Instalacja (Zalecane)
+
+Dla świeżej maszyny wirtualnej (VM/EC2/VPS):
+
+```bash
+# 1. Sklonuj repozytorium
+git clone https://github.com/Przemocny/datazbiornix.git
+cd datazbiornix
+
+# 2. Uruchom skrypt inicjalizacyjny
+# Dla produkcji (port 3005)
+./init.sh prod
+
+# LUB dla developmentu (port 3000)
+./init.sh dev
+```
+
+Skrypt automatycznie:
+- ✅ Zainstaluje Docker i Docker Compose
+- ✅ Utworzy plik .env z konfiguracją
+- ✅ Zbuduje i uruchomi kontenery
+- ✅ Wykona migracje bazy danych
+- ✅ Opcjonalnie wypełni bazę danymi (seed)
+
+**To wszystko! Aplikacja gotowa do użycia.**
+
+---
+
+### 🛠️ Manualna Instalacja
+
+#### Wymagania
 
 - Node.js 18+
 - PostgreSQL 14+ (lub Docker)
 
-### Instalacja
+#### Kroki instalacji
 
 ```bash
 # 1. Sklonuj repozytorium
