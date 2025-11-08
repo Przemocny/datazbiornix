@@ -1,7 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import { DOMAINS } from '@/lib/constants/domains'
 
 export default function ApiDocsPage() {
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005'
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -25,7 +30,7 @@ export default function ApiDocsPage() {
             Każdy endpoint wspiera paginację, filtry, sortowanie i eksport CSV.
           </p>
           <div className="bg-gray-900 text-gray-100 rounded p-4">
-            <code className="text-sm">Base URL: http://localhost:3000/api</code>
+            <code className="text-sm">Base URL: {baseUrl}/api</code>
           </div>
         </section>
 
@@ -176,7 +181,7 @@ export default function ApiDocsPage() {
             <div>
               <h3 className="font-bold mb-2">cURL</h3>
               <div className="bg-gray-900 text-gray-100 rounded p-3 overflow-x-auto">
-                <pre className="text-sm">{`curl "http://localhost:3000/api/finance/invoices?quality=realistic&limit=50"`}</pre>
+                <pre className="text-sm">{`curl "${baseUrl}/api/finance/invoices?quality=realistic&limit=50"`}</pre>
               </div>
             </div>
 
@@ -186,7 +191,7 @@ export default function ApiDocsPage() {
                 <pre className="text-sm">{`import requests
 
 response = requests.get(
-    "http://localhost:3000/api/finance/invoices",
+    "${baseUrl}/api/finance/invoices",
     params={"quality": "realistic", "limit": 50}
 )
 
@@ -198,7 +203,7 @@ data = response.json()`}</pre>
               <h3 className="font-bold mb-2">JavaScript/TypeScript</h3>
               <div className="bg-gray-900 text-gray-100 rounded p-3 overflow-x-auto">
                 <pre className="text-sm">{`const response = await fetch(
-  "http://localhost:3000/api/finance/invoices?quality=realistic&limit=50"
+  "${baseUrl}/api/finance/invoices?quality=realistic&limit=50"
 );
 
 const data = await response.json();`}</pre>

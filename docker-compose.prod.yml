@@ -24,6 +24,8 @@ services:
       DATABASE_URL: "postgresql://datazbiornix:${POSTGRES_PASSWORD:-datazbiornix_secure_password}@postgres:5432/datazbiornix"
       NODE_ENV: production
       PORT: 3005
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-dev-admin-key-123}
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3005}
     ports:
       - "3005:3005"
     depends_on:

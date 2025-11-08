@@ -1,6 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 
 export default function GuidePage() {
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005'
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -55,7 +60,7 @@ export default function GuidePage() {
 {`import requests
 
 response = requests.get(
-    'http://localhost:3000/api/finance/invoices',
+    '${baseUrl}/api/finance/invoices',
     params={'quality': 'realistic', 'limit': 100}
 )
 
@@ -68,7 +73,7 @@ print(f"Pobrano {len(data['data'])} faktur")`}
             <p className="text-sm text-gray-400 mb-2">JavaScript/TypeScript:</p>
             <pre className="text-sm overflow-x-auto">
 {`const response = await fetch(
-  'http://localhost:3000/api/finance/invoices?quality=realistic&limit=100'
+  '${baseUrl}/api/finance/invoices?quality=realistic&limit=100'
 );
 
 const data = await response.json();
@@ -139,7 +144,7 @@ console.log(\`Pobrano \${data.data.length} faktur\`);`}
           </p>
           <div className="bg-gray-900 text-gray-100 rounded-lg p-6">
             <pre className="text-sm overflow-x-auto">
-{`http://localhost:3000/api/finance/invoices?quality=realistic&format=csv&limit=1000`}
+{`${baseUrl}/api/finance/invoices?quality=realistic&format=csv&limit=1000`}
             </pre>
           </div>
         </section>
