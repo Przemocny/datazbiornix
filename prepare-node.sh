@@ -5,6 +5,11 @@ set -e
 echo "=== Node.js & npm Global Installation Script ==="
 echo ""
 
+# Remove system-installed Node.js and npm to avoid conflicts
+echo "Removing system-installed Node.js and npm (if any)..."
+sudo apt-get remove -y nodejs npm 2>/dev/null || true
+sudo apt-get autoremove -y 2>/dev/null || true
+
 # Install NVM globally
 NVM_DIR="/usr/local/nvm"
 
@@ -27,10 +32,6 @@ echo "Setting permissions for NVM directory..."
 sudo chown -R $(whoami):$(id -gn) "$NVM_DIR"
 sudo chmod -R 755 "$NVM_DIR"
 
-# Load nvm
-export NVM_DIR="$NVM_DIR"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
 # Create global profile script for nvm
 echo "Creating global nvm profile..."
 sudo tee /etc/profile.d/nvm.sh > /dev/null <<'EOF'
@@ -40,6 +41,20 @@ export NVM_DIR="/usr/local/nvm"
 EOF
 
 sudo chmod +x /etc/profile.d/nvm.sh
+
+# Also add to /etc/bash.bashrc for interactive shells
+echo "Adding nvm to /etc/bash.bashrc..."
+if ! grep -q "NVM_DIR" /etc/bash.bashrc 2>/dev/null; then
+    echo '' | sudo tee -a /etc/bash.bashrc > /dev/null
+    echo '# NVM Configuration' | sudo tee -a /etc/bash.bashrc > /dev/null
+    echo 'export NVM_DIR="/usr/local/nvm"' | sudo tee -a /etc/bash.bashrc > /dev/null
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' | sudo tee -a /etc/bash.bashrc > /dev/null
+    echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' | sudo tee -a /etc/bash.bashrc > /dev/null
+fi
+
+# Load nvm for current session
+export NVM_DIR="$NVM_DIR"
+source "$NVM_DIR/nvm.sh"
 
 echo ""
 echo "Current Node versions installed:"
@@ -79,11 +94,16 @@ npx --version
 
 echo ""
 echo "Creating global symlinks for node, npm, and npx..."
-NODE_PATH=$(which node)
-NPM_PATH=$(which npm)
-NPX_PATH=$(which npx)
+# Get paths from nvm
+NODE_PATH=$(command -v node)
+NPM_PATH=$(command -v npm)
+NPX_PATH=$(command -v npx)
 
+# Remove old system symlinks/binaries
+sudo rm -f /usr/bin/node /usr/bin/npm /usr/bin/npx
 sudo rm -f /usr/local/bin/node /usr/local/bin/npm /usr/local/bin/npx
+
+# Create new symlinks
 sudo ln -sf "$NODE_PATH" /usr/local/bin/node
 sudo ln -sf "$NPM_PATH" /usr/local/bin/npm
 sudo ln -sf "$NPX_PATH" /usr/local/bin/npx
@@ -117,5 +137,11 @@ echo "  nvm use --lts        # Use LTS version"
 echo "  nvm use node         # Use latest version"
 echo "  nvm list             # List installed versions"
 echo ""
-echo "Note: After switching versions with nvm, symlinks will be updated automatically"
+echo "================================================"
+echo "IMPORTANT: To use nvm in your current session, run:"
+echo ""
+echo "  source /etc/profile.d/nvm.sh"
+echo ""
+echo "Or restart your terminal session (logout/login)"
+echo "================================================"
 
