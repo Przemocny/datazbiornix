@@ -14,8 +14,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set Prisma binary target and generate client
-ENV PRISMA_CLI_BINARY_TARGETS="linux-musl-openssl-3.0.x"
+# Generate Prisma Client
 RUN npx prisma generate
 
 # Build Next.js
@@ -29,9 +28,6 @@ ENV NODE_ENV production
 
 # Install OpenSSL and compatibility libraries for Prisma
 RUN apk add --no-cache openssl openssl-dev
-
-# Set Prisma to use OpenSSL 3.0.x
-ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
