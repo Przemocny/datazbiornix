@@ -30,7 +30,7 @@ export default function ApiDocsPage() {
         <section className="mb-12 bg-white border border-gray-200 rounded-lg p-6">
           <h2 className="text-2xl font-bold mb-4">Przegląd</h2>
           <p className="text-gray-700 mb-4">
-            DataZbiornix API dostarcza REST endpoints dla wszystkich zasobów danych. 
+            DataContainer API dostarcza REST endpoints dla wszystkich zasobów danych. 
             Każdy endpoint wspiera paginację, filtry, sortowanie i eksport CSV.
           </p>
           <div className="bg-gray-900 text-gray-100 rounded p-4">

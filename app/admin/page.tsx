@@ -121,7 +121,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Admin Panel</h1>
-            <p className="text-sm text-gray-600">Zarządzanie platformą DataZbiornix</p>
+            <p className="text-sm text-gray-600">Zarządzanie platformą DataContainer</p>
           </div>
           <button
             onClick={() => {

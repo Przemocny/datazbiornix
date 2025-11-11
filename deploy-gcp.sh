@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# DataZbiornix - GCP Deployment Script
+# DataContainer - GCP Deployment Script
 # Skrypt do wdrożenia aplikacji na Google Cloud Platform
 
 set -e
 
-echo "🚀 DataZbiornix - Deployment na GCP"
+echo "🚀 DataContainer - Deployment na GCP"
 echo "=================================="
 echo ""
 
@@ -16,8 +16,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Zmienne
-PROJECT_NAME="datazbiornix"
-INSTANCE_NAME="datazbiornix-vm"
+PROJECT_NAME="datacontainer"
+INSTANCE_NAME="datacontainer-vm"
 ZONE="europe-central2-a"
 MACHINE_TYPE="e2-small"
 IMAGE_FAMILY="ubuntu-2204-lts"
@@ -39,9 +39,9 @@ echo ""
 read -p "Podaj PROJECT_ID (lub naciśnij Enter aby stworzyć nowy): " PROJECT_ID
 
 if [ -z "$PROJECT_ID" ]; then
-    PROJECT_ID="datazbiornix-$(date +%s)"
+    PROJECT_ID="datacontainer-$(date +%s)"
     echo "Tworzenie nowego projektu: $PROJECT_ID"
-    gcloud projects create $PROJECT_ID --name="DataZbiornix"
+    gcloud projects create $PROJECT_ID --name="DataContainer"
 fi
 
 gcloud config set project $PROJECT_ID
@@ -71,7 +71,7 @@ gcloud compute instances create $INSTANCE_NAME \
     --image-project=$IMAGE_PROJECT \
     --boot-disk-size=30GB \
     --boot-disk-type=pd-standard \
-    --tags=http-server,https-server,datazbiornix \
+    --tags=http-server,https-server,datacontainer \
     --metadata=startup-script='#!/bin/bash
 apt-get update
 apt-get install -y docker.io docker-compose git
@@ -86,12 +86,12 @@ echo ""
 echo -e "${YELLOW}Krok 5: Konfiguracja firewalla${NC}"
 
 # Sprawdź czy reguły już istnieją, jeśli nie - utwórz
-if ! gcloud compute firewall-rules describe allow-datazbiornix &>/dev/null; then
-    gcloud compute firewall-rules create allow-datazbiornix \
+if ! gcloud compute firewall-rules describe allow-datacontainer &>/dev/null; then
+    gcloud compute firewall-rules create allow-datacontainer \
         --allow=tcp:3005 \
         --source-ranges=0.0.0.0/0 \
-        --target-tags=datazbiornix \
-        --description="Allow port 3005 for DataZbiornix"
+        --target-tags=datacontainer \
+        --description="Allow port 3005 for DataContainer"
     echo -e "${GREEN}✓ Reguła firewalla utworzona (port 3005)${NC}"
 else
     echo -e "${GREEN}✓ Reguła firewalla już istnieje${NC}"
@@ -127,7 +127,7 @@ EOF
 fi
 
 # Stwórz archiwum projektu
-tar -czf /tmp/datazbiornix.tar.gz \
+tar -czf /tmp/datacontainer.tar.gz \
     --exclude='node_modules' \
     --exclude='.next' \
     --exclude='.git' \
@@ -135,7 +135,7 @@ tar -czf /tmp/datazbiornix.tar.gz \
     .
 
 # Kopiuj na VM
-gcloud compute scp /tmp/datazbiornix.tar.gz $INSTANCE_NAME:/tmp/ --zone=$ZONE
+gcloud compute scp /tmp/datacontainer.tar.gz $INSTANCE_NAME:/tmp/ --zone=$ZONE
 
 echo -e "${GREEN}✓ Projekt skopiowany${NC}"
 
@@ -145,15 +145,15 @@ echo -e "${YELLOW}Krok 8: Deployment aplikacji na VM${NC}"
 gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command="
     set -e
     cd /tmp
-    mkdir -p datazbiornix
-    tar -xzf datazbiornix.tar.gz -C datazbiornix
-    cd datazbiornix
+    mkdir -p datacontainer
+    tar -xzf datacontainer.tar.gz -C datacontainer
+    cd datacontainer
     
     # Stwórz .env
     cat > .env << 'ENVEOF'
-DATABASE_URL=\"postgresql://datazbiornix:datazbiornix_secure_pass_2024@postgres:5432/datazbiornix\"
+DATABASE_URL=\"postgresql://datacontainer:datacontainer_secure_pass_2024@postgres:5432/datacontainer\"
 NODE_ENV=production
-POSTGRES_PASSWORD=datazbiornix_secure_pass_2024
+POSTGRES_PASSWORD=datacontainer_secure_pass_2024
 ENVEOF
     
     # Uruchom docker-compose
@@ -164,11 +164,11 @@ ENVEOF
     sleep 15
     
     # Uruchom migracje Prisma
-    sudo docker exec datazbiornix-app npx prisma migrate deploy || echo 'Migracje nieudane, próbuję db push...'
-    sudo docker exec datazbiornix-app npx prisma db push --accept-data-loss || echo 'DB push nieudany'
+    sudo docker exec datacontainer-app npx prisma migrate deploy || echo 'Migracje nieudane, próbuję db push...'
+    sudo docker exec datacontainer-app npx prisma db push --accept-data-loss || echo 'DB push nieudany'
     
     echo 'Uruchamiam seed...'
-    sudo docker exec datazbiornix-app npm run seed
+    sudo docker exec datacontainer-app npm run seed
 "
 
 echo ""
@@ -186,8 +186,8 @@ echo "  - http://$EXTERNAL_IP:3005/admin (klucz: dev-admin-key-123)"
 echo ""
 echo "🔧 Przydatne komendy:"
 echo "  SSH do VM:        gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --project=$PROJECT_ID"
-echo "  Logi aplikacji:   gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command='sudo docker logs -f datazbiornix-app'"
-echo "  Restart:          gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command='cd /tmp/datazbiornix && sudo docker-compose -f docker-compose.prod.yml restart'"
+echo "  Logi aplikacji:   gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command='sudo docker logs -f datacontainer-app'"
+echo "  Restart:          gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command='cd /tmp/datacontainer && sudo docker-compose -f docker-compose.prod.yml restart'"
 echo "  Stop VM:          gcloud compute instances stop $INSTANCE_NAME --zone=$ZONE"
 echo "  Start VM:         gcloud compute instances start $INSTANCE_NAME --zone=$ZONE"
 echo "  Delete VM:        gcloud compute instances delete $INSTANCE_NAME --zone=$ZONE"

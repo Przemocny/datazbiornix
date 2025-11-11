@@ -23,7 +23,7 @@ export default function GuidePage() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold mb-8">Jak korzystać z DataZbiornix?</h1>
+        <h1 className="text-4xl font-bold mb-8">Jak korzystać z DataContainer?</h1>
 
         {/* Section 1 */}
         <section className="mb-12">
@@ -33,7 +33,7 @@ export default function GuidePage() {
             Wyobraź sobie to jak menu w restauracji - pokazuje co możesz zamówić i jak to zamówić.
           </p>
           <p className="text-gray-700">
-            W DataZbiornix, API pozwala Ci pobierać dane biznesowe w różnych formatach, 
+            W DataContainer, API pozwala Ci pobierać dane biznesowe w różnych formatach, 
             filtrować je i eksportować do dalszej analizy.
           </p>
         </section>

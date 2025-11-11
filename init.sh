@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# DataZbiornix - Universal Initialization Script
+# DataContainer - Universal Initialization Script
 # Usage: ./init.sh [dev|prod]
 
 set -e
@@ -16,7 +16,7 @@ NC='\033[0m'
 MODE="${1:-prod}"
 
 echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   DataZbiornix Initialization Script   ║${NC}"
+echo -e "${BLUE}║   DataContainer Initialization Script  ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "${YELLOW}Mode: ${MODE}${NC}"
@@ -110,14 +110,14 @@ if [ "$MODE" = "prod" ]; then
     # Generate secure password for production
     DB_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
     cat > .env << EOF
-DATABASE_URL="postgresql://datazbiornix:${DB_PASSWORD}@postgres:5432/datazbiornix"
+DATABASE_URL="postgresql://datacontainer:${DB_PASSWORD}@postgres:5432/datacontainer"
 NODE_ENV=production
 POSTGRES_PASSWORD=${DB_PASSWORD}
 EOF
     echo -e "${GREEN}✓ Production .env created with secure password${NC}"
 else
     cat > .env << 'EOF'
-DATABASE_URL="postgresql://datazbiornix:devpassword@postgres:5432/datazbiornix"
+DATABASE_URL="postgresql://datacontainer:devpassword@postgres:5432/datacontainer"
 NODE_ENV=development
 POSTGRES_PASSWORD=devpassword
 EOF
@@ -198,7 +198,7 @@ fi
 # Final status check
 echo ""
 echo -e "${BLUE}════════════════════════════════════════${NC}"
-echo -e "${GREEN}✅ DataZbiornix is ready!${NC}"
+echo -e "${GREEN}✅ DataContainer is ready!${NC}"
 echo -e "${BLUE}════════════════════════════════════════${NC}"
 echo ""
 

@@ -1,9 +1,9 @@
-# DataZbiornix - Deployment na GCP
+# DataContainer - Deployment na GCP
 
 ## 📊 Status Deploymentu
 
 **Projekt GCP:** `pj-test-437616`  
-**Instancja VM:** `datazbiornix-vm`  
+**Instancja VM:** `datacontainer-vm`  
 **Typ maszyny:** `e2-small` (2GB RAM, 2 vCPU)  
 **Region:** `europe-central2-a` (Warszawa)  
 **External IP:** `34.116.190.192`  
@@ -22,7 +22,7 @@ Użytkownik powinien ręcznie dokończyć deployment SSH-ujc się do instancji.
 ### Krok 1: SSH do instancji
 
 ```bash
-gcloud compute ssh datazbiornix-vm \\
+gcloud compute ssh datacontainer-vm \\
   --zone=europe-central2-a \\
   --project=pj-test-437616 \\
   --ssh-key-file=~/.ssh/google_compute_engine
@@ -30,7 +30,7 @@ gcloud compute ssh datazbiornix-vm \\
 
 **Problem z SSH?** Spróbuj:
 ```bash
-gcloud compute ssh datazbiornix-vm \\
+gcloud compute ssh datacontainer-vm \\
   --zone=europe-central2-a \\
   --project=pj-test-437616 \\
   --tunnel-through-iap
@@ -40,19 +40,19 @@ gcloud compute ssh datazbiornix-vm \\
 
 ```bash
 cd /tmp
-wget https://storage.googleapis.com/datazbiornix-deploy-1762607288/datazbiornix.tar.gz
-mkdir -p datazbiornix
-tar -xzf datazbiornix.tar.gz -C datazbiornix
-cd datazbiornix
+wget https://storage.googleapis.com/datacontainer-deploy-1762607288/datacontainer.tar.gz
+mkdir -p datacontainer
+tar -xzf datacontainer.tar.gz -C datacontainer
+cd datacontainer
 ```
 
 ### Krok 3: Stwórz plik .env
 
 ```bash
 cat > .env << 'EOF'
-DATABASE_URL="postgresql://datazbiornix:datazbiornix_secure_pass_2024@postgres:5432/datazbiornix"
+DATABASE_URL="postgresql://datacontainer:datacontainer_secure_pass_2024@postgres:5432/datacontainer"
 NODE_ENV=production
-POSTGRES_PASSWORD=datazbiornix_secure_pass_2024
+POSTGRES_PASSWORD=datacontainer_secure_pass_2024
 EOF
 ```
 
@@ -69,10 +69,10 @@ sudo docker-compose -f docker-compose.prod.yml up -d --build
 
 ```bash
 # Sprawdź logi aplikacji
-sudo docker logs -f datazbiornix-app
+sudo docker logs -f datacontainer-app
 
 # Sprawdź logi bazy danych
-sudo docker logs datazbiornix-db
+sudo docker logs datacontainer-db
 
 # Sprawdź status kontenerów
 sudo docker ps
@@ -84,7 +84,7 @@ sudo docker ps
 # Poczekaj aż aplikacja się zbuduje (sprawdź logi powyżej)
 
 # Uruchom migracje Prisma
-sudo docker exec datazbiornix-app npx prisma db push --accept-data-loss
+sudo docker exec datacontainer-app npx prisma db push --accept-data-loss
 ```
 
 ### Krok 7: Seed danych (opcjonalnie)
@@ -92,7 +92,7 @@ sudo docker exec datazbiornix-app npx prisma db push --accept-data-loss
 **Uwaga:** Seed może zająć 20-30 minut i wymaga dużo pamięci. Na e2-micro może się nie udać.
 
 ```bash
-sudo docker exec datazbiornix-app npm run seed
+sudo docker exec datacontainer-app npm run seed
 ```
 
 Jeśli seed fail-uje z powodu braku pamięci, możesz:
@@ -115,18 +115,18 @@ Jeśli e2-micro jest za słaba, zmień na e2-small:
 
 ```bash
 # Stop instancji
-gcloud compute instances stop datazbiornix-vm \\
+gcloud compute instances stop datacontainer-vm \\
   --zone=europe-central2-a \\
   --project=pj-test-437616
 
 # Zmień machine type
-gcloud compute instances set-machine-type datazbiornix-vm \\
+gcloud compute instances set-machine-type datacontainer-vm \\
   --machine-type=e2-small \\
   --zone=europe-central2-a \\
   --project=pj-test-437616
 
 # Start instancji
-gcloud compute instances start datazbiornix-vm \\
+gcloud compute instances start datacontainer-vm \\
   --zone=europe-central2-a \\
   --project=pj-test-437616
 ```
@@ -135,27 +135,27 @@ gcloud compute instances start datazbiornix-vm \\
 
 ### Zatrzymanie instancji (bez usuwania)
 ```bash
-gcloud compute instances stop datazbiornix-vm \\
+gcloud compute instances stop datacontainer-vm \\
   --zone=europe-central2-a \\
   --project=pj-test-437616
 ```
 
 ### Usunięcie instancji
 ```bash
-gcloud compute instances delete datazbiornix-vm \\
+gcloud compute instances delete datacontainer-vm \\
   --zone=europe-central2-a \\
   --project=pj-test-437616
 ```
 
 ### Usunięcie firewalla
 ```bash
-gcloud compute firewall-rules delete allow-datazbiornix --project=pj-test-437616
+gcloud compute firewall-rules delete allow-datacontainer --project=pj-test-437616
 gcloud compute firewall-rules delete allow-ssh-ingress-from-iap --project=pj-test-437616
 ```
 
 ### Usunięcie bucketa GCS
 ```bash
-gsutil rm -r gs://datazbiornix-deploy-1762607288/
+gsutil rm -r gs://datacontainer-deploy-1762607288/
 ```
 
 ## 📝 Notatki

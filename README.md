@@ -1,4 +1,4 @@
-# DataZbiornix - Platforma do Nauki Pracy z Danymi
+# DataContainer - Platforma do Nauki Pracy z Danymi
 
 Aplikacja edukacyjna dostarczająca realistyczne dane biznesowe z 7 działów w trzech poziomach jakości.
 
@@ -19,8 +19,8 @@ Dla świeżej maszyny wirtualnej (VM/EC2/VPS):
 
 ```bash
 # 1. Sklonuj repozytorium
-git clone https://github.com/Przemocny/datazbiornix.git
-cd datazbiornix
+git clone https://github.com/Przemocny/datacontainer.git
+cd datacontainer
 
 # 2. Uruchom skrypt inicjalizacyjny
 # Dla produkcji (port 3005)
@@ -53,7 +53,7 @@ Skrypt automatycznie:
 ```bash
 # 1. Sklonuj repozytorium
 git clone <repo-url>
-cd datazbiornix
+cd datacontainer
 
 # 2. Zainstaluj zależności
 npm install
@@ -217,13 +217,13 @@ docker-compose up -d
 
 ```bash
 # Build
-docker build -t datazbiornix .
+docker build -t datacontainer .
 
 # Run
 docker run -p 3000:3000 \
   -e DATABASE_URL="postgresql://..." \
   -e ADMIN_API_KEY="your-key" \
-  datazbiornix
+  datacontainer
 ```
 
 ## 📖 Dokumentacja
@@ -253,7 +253,7 @@ npm run lint             # Uruchom ESLint
 ## 📁 Struktura Projektu
 
 ```
-datazbiornix/
+datacontainer/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API routes
 │   │   ├── finance/       # Finance endpoints

@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "DataZbiornix - Platforma do Nauki Pracy z Danymi",
+  title: "DataContainer - Platforma do Nauki Pracy z Danymi",
   description: "Ucz się pracy z API i danymi biznesowymi na realistycznych przykładach",
 };
 

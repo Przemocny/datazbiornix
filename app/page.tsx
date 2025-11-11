@@ -8,7 +8,7 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">DataZbiornix</h1>
+          <h1 className="text-2xl font-bold text-gray-900">DataContainer</h1>
           <p className="text-sm text-gray-600">Platforma do Nauki Pracy z Danymi</p>
         </div>
       </header>
@@ -130,7 +130,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <h4 className="font-bold mb-4">DataZbiornix</h4>
+              <h4 className="font-bold mb-4">DataContainer</h4>
               <p className="text-gray-400 text-sm">
                 Platforma edukacyjna do nauki pracy z danymi i API.
               </p>
@@ -152,7 +152,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>© 2025 DataZbiornix. Stworzono dla celów edukacyjnych.</p>
+            <p>© 2025 DataContainer. Stworzono dla celów edukacyjnych.</p>
           </div>
         </div>
       </footer>

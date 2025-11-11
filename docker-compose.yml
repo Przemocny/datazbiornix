@@ -1,12 +1,12 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: datazbiornix-db
+    container_name: datacontainer-db
     restart: always
     environment:
-      POSTGRES_USER: datazbiornix
-      POSTGRES_PASSWORD: datazbiornix_password
-      POSTGRES_DB: datazbiornix
+      POSTGRES_USER: datacontainer
+      POSTGRES_PASSWORD: datacontainer_password
+      POSTGRES_DB: datacontainer
     ports:
       - "5432:5432"
     volumes:

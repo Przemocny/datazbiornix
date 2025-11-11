@@ -1,4 +1,4 @@
-# Getting Started - DataZbiornix
+# Getting Started - DataContainer
 
 ## 🎯 Co zostało zaimplementowane
 
@@ -33,7 +33,7 @@ docker --version  # Opcjonalnie dla PostgreSQL
 ### Krok 2: Zainstaluj zależności
 
 ```bash
-cd /Users/campuscto/Projects/datazbiornix
+cd /Users/campuscto/Projects/datacontainer
 npm install
 ```
 
@@ -45,13 +45,13 @@ docker-compose up -d
 ```
 
 **Opcja B: Lokalny PostgreSQL**
-Upewnij się, że PostgreSQL działa i utwórz bazę `datazbiornix`
+Upewnij się, że PostgreSQL działa i utwórz bazę `datacontainer`
 
 ### Krok 4: Skonfiguruj .env
 
 Plik `.env` został już utworzony z wartościami domyślnymi:
 ```
-DATABASE_URL="postgresql://datazbiornix:datazbiornix_password@localhost:5432/datazbiornix"
+DATABASE_URL="postgresql://datacontainer:datacontainer_password@localhost:5432/datacontainer"
 ADMIN_API_KEY="dev-admin-key-123"
 NEXT_PUBLIC_API_URL="http://localhost:3000"
 ```

@@ -1,0 +1,613 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// FINANCE DOMAIN
+// ============================================
+
+model CostCenter {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  name       String
+  department String
+  manager    String
+  active     Boolean  @default(true)
+  
+  invoices      Invoice[]
+  budgetEntries BudgetEntry[]
+  
+  @@map("cost_centers")
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  invoiceNumber  String   @unique @map("invoice_number")
+  issueDate      DateTime @map("issue_date")
+  dueDate        DateTime @map("due_date")
+  amount         Decimal  @db.Decimal(12, 2)
+  currency       String   @db.VarChar(3)
+  status         String   // draft, sent, paid, overdue, cancelled
+  customerName   String   @map("customer_name")
+  customerEmail  String?  @map("customer_email")
+  costCenterId   String   @map("cost_center_id")
+  
+  costCenter  CostCenter    @relation(fields: [costCenterId], references: [id])
+  transactions Transaction[]
+  
+  @@map("invoices")
+  @@index([status])
+  @@index([issueDate])
+}
+
+model Transaction {
+  id              String    @id @default(uuid())
+  transactionDate DateTime  @map("transaction_date")
+  amount          Decimal   @db.Decimal(12, 2)
+  type            String    // debit, credit
+  category        String
+  description     String?   @db.Text
+  invoiceId       String?   @map("invoice_id")
+  budgetEntryId   String?   @map("budget_entry_id")
+  
+  invoice     Invoice?     @relation(fields: [invoiceId], references: [id])
+  budgetEntry BudgetEntry? @relation(fields: [budgetEntryId], references: [id])
+  
+  @@map("transactions")
+  @@index([transactionDate])
+  @@index([category])
+}
+
+model BudgetEntry {
+  id            String   @id @default(uuid())
+  fiscalYear    Int      @map("fiscal_year")
+  quarter       Int      // 1-4
+  department    String
+  category      String
+  plannedAmount Decimal  @map("planned_amount") @db.Decimal(12, 2)
+  actualAmount  Decimal  @map("actual_amount") @db.Decimal(12, 2)
+  variance      Decimal  @db.Decimal(12, 2)
+  costCenterId  String   @map("cost_center_id")
+  
+  costCenter   CostCenter    @relation(fields: [costCenterId], references: [id])
+  transactions Transaction[]
+  
+  @@map("budget_entries")
+  @@index([fiscalYear, quarter])
+}
+
+// ============================================
+// SALES DOMAIN
+// ============================================
+
+model Lead {
+  id         String   @id @default(uuid())
+  firstName  String   @map("first_name")
+  lastName   String   @map("last_name")
+  email      String
+  phone      String?
+  company    String?
+  source     String   // website, referral, cold_call, event, social_media
+  status     String   // new, contacted, qualified, disqualified
+  createdAt  DateTime @default(now()) @map("created_at")
+  assignedTo String?  @map("assigned_to")
+  
+  qualifiedLead   QualifiedLead?
+  salesActivities SalesActivity[]
+  
+  @@map("leads")
+  @@index([status])
+  @@index([source])
+  @@index([createdAt])
+}
+
+model QualifiedLead {
+  id                String   @id @default(uuid())
+  leadId            String   @unique @map("lead_id")
+  qualificationDate DateTime @map("qualification_date")
+  budget            Decimal? @db.Decimal(12, 2)
+  decisionMaker     String?  @map("decision_maker")
+  timeline          String?
+  needs             String?  @db.Text
+  score             Int?     // 1-100
+  
+  lead  Lead   @relation(fields: [leadId], references: [id])
+  deals Deal[]
+  
+  @@map("qualified_leads")
+}
+
+model Deal {
+  id                String    @id @default(uuid())
+  qualifiedLeadId   String    @map("qualified_lead_id")
+  dealName          String    @map("deal_name")
+  amount            Decimal   @db.Decimal(12, 2)
+  probability       Int       // 0-100
+  stage             String    // proposal, negotiation, closed_won, closed_lost
+  expectedCloseDate DateTime? @map("expected_close_date")
+  actualCloseDate   DateTime? @map("actual_close_date")
+  owner             String
+  
+  qualifiedLead   QualifiedLead   @relation(fields: [qualifiedLeadId], references: [id])
+  opportunities   Opportunity[]
+  salesActivities SalesActivity[]
+  
+  @@map("deals")
+  @@index([stage])
+  @@index([owner])
+}
+
+model Opportunity {
+  id          String  @id @default(uuid())
+  dealId      String  @map("deal_id")
+  productName String  @map("product_name")
+  quantity    Int
+  unitPrice   Decimal @map("unit_price") @db.Decimal(12, 2)
+  totalValue  Decimal @map("total_value") @db.Decimal(12, 2)
+  notes       String? @db.Text
+  
+  deal Deal @relation(fields: [dealId], references: [id])
+  
+  @@map("opportunities")
+}
+
+model SalesActivity {
+  id              String   @id @default(uuid())
+  leadId          String?  @map("lead_id")
+  dealId          String?  @map("deal_id")
+  activityType    String   @map("activity_type") // call, email, meeting, demo
+  activityDate    DateTime @map("activity_date")
+  durationMinutes Int?     @map("duration_minutes")
+  notes           String?  @db.Text
+  outcome         String?
+  
+  lead Lead? @relation(fields: [leadId], references: [id])
+  deal Deal? @relation(fields: [dealId], references: [id])
+  
+  @@map("sales_activities")
+  @@index([activityDate])
+  @@index([activityType])
+}
+
+// ============================================
+// MARKETING DOMAIN
+// ============================================
+
+model Campaign {
+  id        String    @id @default(uuid())
+  name      String
+  platform  String    // google_ads, facebook, linkedin, twitter
+  startDate DateTime  @map("start_date")
+  endDate   DateTime? @map("end_date")
+  budget    Decimal   @db.Decimal(12, 2)
+  status    String    // draft, active, paused, completed
+  objective String    // awareness, leads, sales
+  
+  adGroups        AdGroup[]
+  campaignMetrics CampaignMetric[]
+  
+  @@map("campaigns")
+  @@index([status])
+  @@index([platform])
+}
+
+model AdGroup {
+  id             String  @id @default(uuid())
+  campaignId     String  @map("campaign_id")
+  name           String
+  targetAudience String? @map("target_audience")
+  dailyBudget    Decimal @map("daily_budget") @db.Decimal(10, 2)
+  
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  ads      Ad[]
+  
+  @@map("ad_groups")
+}
+
+model Ad {
+  id          String  @id @default(uuid())
+  adGroupId   String  @map("ad_group_id")
+  headline    String
+  description String  @db.Text
+  cta         String  // call to action
+  imageUrl    String? @map("image_url")
+  status      String  // active, paused, rejected
+  
+  adGroup AdGroup @relation(fields: [adGroupId], references: [id])
+  
+  @@map("ads")
+  @@index([status])
+}
+
+model CampaignMetric {
+  id             String   @id @default(uuid())
+  campaignId     String   @map("campaign_id")
+  date           DateTime
+  impressions    Int
+  clicks         Int
+  conversions    Int
+  cost           Decimal  @db.Decimal(10, 2)
+  ctr            Decimal  @db.Decimal(5, 4) // click-through rate
+  cpc            Decimal  @db.Decimal(10, 2) // cost per click
+  conversionRate Decimal  @map("conversion_rate") @db.Decimal(5, 4)
+  
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  
+  @@map("campaign_metrics")
+  @@index([campaignId, date])
+}
+
+// ============================================
+// LOGISTICS DOMAIN
+// ============================================
+
+model Warehouse {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  address     String
+  city        String
+  country     String
+  capacitySqm Decimal @map("capacity_sqm") @db.Decimal(10, 2)
+  manager     String
+  
+  packages            Package[]
+  shipmentsOrigin     Shipment[]          @relation("WarehouseOrigin")
+  deliveryRoutes      DeliveryRoute[]
+  inventoryMovements  InventoryMovement[]
+  warehouseStock      WarehouseStock[]
+  
+  @@map("warehouses")
+}
+
+model Package {
+  id             String   @id @default(uuid())
+  trackingNumber String   @unique @map("tracking_number")
+  weightKg       Decimal  @map("weight_kg") @db.Decimal(8, 2)
+  dimensions     String   // format: "LxWxH cm"
+  warehouseId    String   @map("warehouse_id")
+  status         String   // received, in_transit, delivered, returned, lost
+  createdAt      DateTime @default(now()) @map("created_at")
+  
+  warehouse          Warehouse           @relation(fields: [warehouseId], references: [id])
+  inventoryMovements InventoryMovement[]
+  
+  @@map("packages")
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Shipment {
+  id                  String    @id @default(uuid())
+  shipmentNumber      String    @unique @map("shipment_number")
+  originWarehouseId   String    @map("origin_warehouse_id")
+  destinationAddress  String    @map("destination_address")
+  destinationCity     String    @map("destination_city")
+  destinationCountry  String    @map("destination_country")
+  carrier             String
+  shipmentDate        DateTime  @map("shipment_date")
+  estimatedDelivery   DateTime  @map("estimated_delivery")
+  actualDelivery      DateTime? @map("actual_delivery")
+  status              String    // pending, picked_up, in_transit, delivered, failed
+  
+  originWarehouse    Warehouse           @relation("WarehouseOrigin", fields: [originWarehouseId], references: [id])
+  inventoryMovements InventoryMovement[]
+  
+  @@map("shipments")
+  @@index([status])
+  @@index([shipmentDate])
+}
+
+model DeliveryRoute {
+  id                      String   @id @default(uuid())
+  routeName               String   @map("route_name")
+  driverName              String   @map("driver_name")
+  vehicle                 String
+  startWarehouseId        String   @map("start_warehouse_id")
+  routeDate               DateTime @map("route_date")
+  distanceKm              Decimal  @map("distance_km") @db.Decimal(8, 2)
+  estimatedDurationHours  Decimal  @map("estimated_duration_hours") @db.Decimal(5, 2)
+  
+  startWarehouse Warehouse @relation(fields: [startWarehouseId], references: [id])
+  
+  @@map("delivery_routes")
+  @@index([routeDate])
+}
+
+model InventoryMovement {
+  id           String   @id @default(uuid())
+  warehouseId  String   @map("warehouse_id")
+  movementType String   @map("movement_type") // inbound, outbound, transfer, adjustment
+  packageId    String?  @map("package_id")
+  shipmentId   String?  @map("shipment_id")
+  quantity     Int
+  movementDate DateTime @map("movement_date")
+  notes        String?  @db.Text
+  
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  package   Package?  @relation(fields: [packageId], references: [id])
+  shipment  Shipment? @relation(fields: [shipmentId], references: [id])
+  
+  @@map("inventory_movements")
+  @@index([movementDate])
+  @@index([movementType])
+}
+
+// ============================================
+// ECOMMERCE DOMAIN
+// ============================================
+
+model Customer {
+  id               String   @id @default(uuid())
+  firstName        String   @map("first_name")
+  lastName         String   @map("last_name")
+  email            String   @unique
+  phone            String?
+  address          String?
+  city             String?
+  country          String?
+  postalCode       String?  @map("postal_code")
+  registrationDate DateTime @map("registration_date")
+  customerType     String   @map("customer_type") // regular, premium, vip
+  
+  orders Order[]
+  
+  @@map("customers")
+  @@index([customerType])
+}
+
+model Product {
+  id            String  @id @default(uuid())
+  sku           String  @unique
+  name          String
+  description   String? @db.Text
+  category      String
+  price         Decimal @db.Decimal(10, 2)
+  stockQuantity Int     @map("stock_quantity")
+  supplierId    String? @map("supplier_id")
+  active        Boolean @default(true)
+  
+  supplier          Supplier?          @relation(fields: [supplierId], references: [id])
+  orderItems        OrderItem[]
+  productionBatches ProductionBatch[]
+  warehouseStock    WarehouseStock[]
+  
+  @@map("products")
+  @@index([category])
+  @@index([active])
+}
+
+model Order {
+  id              String   @id @default(uuid())
+  orderNumber     String   @unique @map("order_number")
+  customerId      String   @map("customer_id")
+  orderDate       DateTime @map("order_date")
+  totalAmount     Decimal  @map("total_amount") @db.Decimal(12, 2)
+  status          String   // pending, processing, shipped, delivered, cancelled, refunded
+  shippingAddress String   @map("shipping_address")
+  billingAddress  String   @map("billing_address")
+  
+  customer   Customer    @relation(fields: [customerId], references: [id])
+  orderItems OrderItem[]
+  payments   Payment[]
+  
+  @@map("orders")
+  @@index([status])
+  @@index([orderDate])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String  @map("order_id")
+  productId String  @map("product_id")
+  quantity  Int
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(12, 2)
+  discount  Decimal @default(0) @db.Decimal(10, 2)
+  
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  
+  @@map("order_items")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String   @map("order_id")
+  paymentDate   DateTime @map("payment_date")
+  amount        Decimal  @db.Decimal(12, 2)
+  paymentMethod String   @map("payment_method") // credit_card, paypal, bank_transfer, cash_on_delivery
+  transactionId String   @map("transaction_id")
+  status        String   // pending, completed, failed, refunded
+  
+  order Order @relation(fields: [orderId], references: [id])
+  
+  @@map("payments")
+  @@index([status])
+  @@index([paymentDate])
+}
+
+// ============================================
+// PRODUCTION DOMAIN
+// ============================================
+
+model Supplier {
+  id             String  @id @default(uuid())
+  companyName    String  @map("company_name")
+  contactPerson  String  @map("contact_person")
+  email          String
+  phone          String
+  address        String
+  country        String
+  rating         Decimal @db.Decimal(3, 2) // 1-5
+  active         Boolean @default(true)
+  
+  supplierOrders SupplierOrder[]
+  products       Product[]
+  
+  @@map("suppliers")
+  @@index([active])
+}
+
+model SupplierOrder {
+  id               String    @id @default(uuid())
+  orderNumber      String    @unique @map("order_number")
+  supplierId       String    @map("supplier_id")
+  orderDate        DateTime  @map("order_date")
+  expectedDelivery DateTime  @map("expected_delivery")
+  actualDelivery   DateTime? @map("actual_delivery")
+  totalAmount      Decimal   @map("total_amount") @db.Decimal(12, 2)
+  status           String    // ordered, confirmed, in_transit, received, cancelled
+  
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  
+  @@map("supplier_orders")
+  @@index([status])
+  @@index([orderDate])
+}
+
+model ProductionBatch {
+  id               String    @id @default(uuid())
+  batchNumber      String    @unique @map("batch_number")
+  productId        String    @map("product_id")
+  quantityPlanned  Int       @map("quantity_planned")
+  quantityProduced Int       @map("quantity_produced")
+  startDate        DateTime  @map("start_date")
+  endDate          DateTime? @map("end_date")
+  status           String    // planned, in_progress, completed, failed
+  
+  product       Product        @relation(fields: [productId], references: [id])
+  qualityChecks QualityCheck[]
+  
+  @@map("production_batches")
+  @@index([status])
+  @@index([startDate])
+}
+
+model QualityCheck {
+  id                 String   @id @default(uuid())
+  productionBatchId  String   @map("production_batch_id")
+  checkDate          DateTime @map("check_date")
+  inspectorName      String   @map("inspector_name")
+  passed             Boolean
+  defectsFound       Int      @map("defects_found")
+  defectRate         Decimal  @map("defect_rate") @db.Decimal(5, 4)
+  notes              String?  @db.Text
+  
+  productionBatch ProductionBatch @relation(fields: [productionBatchId], references: [id])
+  
+  @@map("quality_checks")
+  @@index([checkDate])
+  @@index([passed])
+}
+
+model WarehouseStock {
+  id              String   @id @default(uuid())
+  productId       String   @map("product_id")
+  warehouseId     String   @map("warehouse_id")
+  quantity        Int
+  lastUpdated     DateTime @map("last_updated")
+  reorderPoint    Int      @map("reorder_point")
+  reorderQuantity Int      @map("reorder_quantity")
+  
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  
+  @@unique([productId, warehouseId])
+  @@map("warehouse_stock")
+}
+
+// ============================================
+// TIME TRACKING DOMAIN
+// ============================================
+
+model Employee {
+  id         String   @id @default(uuid())
+  employeeId String   @unique @map("employee_id")
+  firstName  String   @map("first_name")
+  lastName   String   @map("last_name")
+  email      String   @unique
+  department String
+  role       String
+  hourlyRate Decimal  @map("hourly_rate") @db.Decimal(10, 2)
+  hireDate   DateTime @map("hire_date")
+  active     Boolean  @default(true)
+  
+  tasksAssigned Task[]
+  timeEntries   TimeEntry[]
+  
+  @@map("employees")
+  @@index([department])
+  @@index([active])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  projectCode String    @unique @map("project_code")
+  name        String
+  description String?   @db.Text
+  clientName  String    @map("client_name")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  budgetHours Decimal   @map("budget_hours") @db.Decimal(10, 2)
+  status      String    // planning, active, on_hold, completed, cancelled
+  
+  tasks       Task[]
+  timeEntries TimeEntry[]
+  
+  @@map("projects")
+  @@index([status])
+  @@index([startDate])
+}
+
+model Task {
+  id             String    @id @default(uuid())
+  projectId      String    @map("project_id")
+  taskKey        String    @unique @map("task_key")
+  title          String
+  description    String?   @db.Text
+  assignedToId   String    @map("assigned_to_id")
+  priority       String    // low, medium, high, critical
+  status         String    // todo, in_progress, in_review, done, blocked
+  estimatedHours Decimal   @map("estimated_hours") @db.Decimal(8, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  dueDate        DateTime? @map("due_date")
+  
+  project     Project     @relation(fields: [projectId], references: [id])
+  assignedTo  Employee    @relation(fields: [assignedToId], references: [id])
+  timeEntries TimeEntry[]
+  
+  @@map("tasks")
+  @@index([status])
+  @@index([priority])
+}
+
+model TimeEntry {
+  id          String   @id @default(uuid())
+  employeeId  String   @map("employee_id")
+  taskId      String   @map("task_id")
+  projectId   String   @map("project_id")
+  date        DateTime
+  hours       Decimal  @db.Decimal(5, 2)
+  description String?  @db.Text
+  billable    Boolean  @default(true)
+  
+  employee Employee @relation(fields: [employeeId], references: [id])
+  task     Task     @relation(fields: [taskId], references: [id])
+  project  Project  @relation(fields: [projectId], references: [id])
+  
+  @@map("time_entries")
+  @@index([date])
+  @@index([employeeId])
+  @@index([projectId])
+}
+

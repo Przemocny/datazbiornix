@@ -832,7 +832,7 @@ Algorytm:
 ## 7. Struktura Projektu (Szczegóły)
 
 ```
-datazbiornix/
+datacontainer/
 ├── app/
 │   ├── layout.tsx                    # Root layout
 │   ├── page.tsx                      # Homepage
@@ -988,7 +988,7 @@ datazbiornix/
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/datazbiornix"
+DATABASE_URL="postgresql://user:password@localhost:5432/datacontainer"
 
 # Admin
 ADMIN_API_KEY="your-secure-api-key-here"
@@ -1002,7 +1002,7 @@ NEXT_PUBLIC_API_URL="http://localhost:3000"
 ```bash
 # 1. Sklonuj repozytorium
 git clone <repo-url>
-cd datazbiornix
+cd datacontainer
 
 # 2. Zainstaluj zależności
 npm install

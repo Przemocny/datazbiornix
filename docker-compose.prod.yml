@@ -1,27 +1,27 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: datazbiornix-db
+    container_name: datacontainer-db
     restart: always
     environment:
-      POSTGRES_USER: datazbiornix
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-datazbiornix_secure_password}
-      POSTGRES_DB: datazbiornix
+      POSTGRES_USER: datacontainer
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-datacontainer_secure_password}
+      POSTGRES_DB: datacontainer
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - datazbiornix-network
+      - datacontainer-network
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: datazbiornix-app
+    container_name: datacontainer-app
     restart: always
     environment:
-      DATABASE_URL: "postgresql://datazbiornix:${POSTGRES_PASSWORD:-datazbiornix_secure_password}@postgres:5432/datazbiornix"
+      DATABASE_URL: "postgresql://datacontainer:${POSTGRES_PASSWORD:-datacontainer_secure_password}@postgres:5432/datacontainer"
       NODE_ENV: production
       PORT: 3005
       ADMIN_API_KEY: ${ADMIN_API_KEY:-dev-admin-key-123}
@@ -31,12 +31,12 @@ services:
     depends_on:
       - postgres
     networks:
-      - datazbiornix-network
+      - datacontainer-network
 
 volumes:
   postgres_data:
 
 networks:
-  datazbiornix-network:
+  datacontainer-network:
     driver: bridge
 
