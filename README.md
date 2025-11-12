@@ -13,31 +13,37 @@ Aplikacja edukacyjna dostarczająca realistyczne dane biznesowe z 7 działów w 
 
 ## 🚀 Szybki Start
 
-### ⚡ Automatyczna Instalacja (Zalecane)
-
-Dla świeżej maszyny wirtualnej (VM/EC2/VPS):
+### ⚡ Deployment na Serwerze (VM/VPS)
 
 ```bash
 # 1. Sklonuj repozytorium
-git clone https://github.com/Przemocny/datacontainer.git
+git clone https://github.com/your-repo/datacontainer.git
 cd datacontainer
 
-# 2. Uruchom skrypt inicjalizacyjny
-# Dla produkcji (port 3005)
-./init.sh prod
+# 2. Zainstaluj Docker (jednorazowo)
+./setup.sh
 
-# LUB dla developmentu (port 3000)
-./init.sh dev
+# 3. Uruchom aplikację
+./init.sh prod          # Produkcja (port 3005)
+# LUB
+./init.sh dev           # Development (port 3000)
 ```
 
-Skrypt automatycznie:
-- ✅ Zainstaluje Docker i Docker Compose
-- ✅ Utworzy plik .env z konfiguracją
-- ✅ Zbuduje i uruchomi kontenery
-- ✅ Wykona migracje bazy danych
-- ✅ Opcjonalnie wypełni bazę danymi (seed)
+Skrypty automatycznie:
+- ✅ Zainstalują Docker i Docker Compose
+- ✅ Utworzą plik .env z konfiguracją
+- ✅ Zbudują i uruchomią kontenery
+- ✅ Wykonają migracje bazy danych
+- ✅ Opcjonalnie wypełnią bazę danymi (seed)
 
-**To wszystko! Aplikacja gotowa do użycia.**
+### 🔄 Aktualizacja Aplikacji
+
+```bash
+# Na serwerze
+cd datacontainer
+git pull
+./init.sh prod          # Restart z nowym kodem
+```
 
 ---
 

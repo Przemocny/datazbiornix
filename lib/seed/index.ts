@@ -12,6 +12,20 @@ import { seedTimeTracking } from './timetracking'
 async function main() {
   console.log('🌱 Starting database seed...\n')
   
+  // Check if database already has data
+  console.log('Checking if database is already seeded...')
+  const invoiceCount = await prisma.invoice.count()
+  const leadCount = await prisma.lead.count()
+  const orderCount = await prisma.order.count()
+  
+  if (invoiceCount > 0 || leadCount > 0 || orderCount > 0) {
+    console.log('✓ Database already contains data. Skipping seed.')
+    console.log(`   Found: ${invoiceCount} invoices, ${leadCount} leads, ${orderCount} orders`)
+    await prisma.$disconnect()
+    return
+  }
+  
+  console.log('Database is empty. Starting seed...\n')
   const startTime = Date.now()
 
   try {

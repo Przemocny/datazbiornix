@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# DataContainer - Universal Initialization Script
+# DataContainer - Initialization Script
 # Usage: ./init.sh [dev|prod]
 
 set -e
@@ -16,7 +16,7 @@ NC='\033[0m'
 MODE="${1:-prod}"
 
 echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   DataContainer Initialization Script  ║${NC}"
+echo -e "${BLUE}║   DataContainer Initialization         ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "${YELLOW}Mode: ${MODE}${NC}"
@@ -44,54 +44,14 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Step 1: Check and install Docker
+# Step 1: Check Docker
 echo -e "${BLUE}[1/7]${NC} Checking Docker installation..."
 if ! command_exists docker; then
-    echo -e "${YELLOW}Docker not found. Installing...${NC}"
-    
-    # Detect OS
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        OS=$ID
-    else
-        echo -e "${RED}❌ Cannot detect OS${NC}"
-        exit 1
-    fi
-    
-    case $OS in
-        ubuntu|debian)
-            sudo apt-get update
-            sudo apt-get install -y ca-certificates curl
-            sudo install -m 0755 -d /etc/apt/keyrings
-            sudo curl -fsSL https://download.docker.com/linux/$OS/gpg -o /etc/apt/keyrings/docker.asc
-            sudo chmod a+r /etc/apt/keyrings/docker.asc
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$OS $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-            sudo apt-get update
-            sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            ;;
-        centos|rhel|fedora)
-            sudo yum install -y yum-utils
-            sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-            sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            ;;
-        *)
-            echo -e "${RED}❌ Unsupported OS: $OS${NC}"
-            echo -e "${YELLOW}Please install Docker manually: https://docs.docker.com/engine/install/${NC}"
-            exit 1
-            ;;
-    esac
-    
-    # Add current user to docker group
-    sudo usermod -aG docker $USER
-    echo -e "${GREEN}✓ Docker installed successfully${NC}"
-    echo -e "${YELLOW}⚠️  You may need to log out and back in for group changes to take effect${NC}"
-else
-    echo -e "${GREEN}✓ Docker is already installed${NC}"
+    echo -e "${RED}❌ Docker not found${NC}"
+    echo -e "${YELLOW}Please run: ./setup.sh${NC}"
+    exit 1
 fi
+echo -e "${GREEN}✓ Docker is installed${NC}"
 
 # Check Docker Compose
 echo ""
@@ -178,21 +138,16 @@ fi
 
 echo -e "${GREEN}✓ Database schema created${NC}"
 
-# Step 7: Optional - Run seed
+# Step 7: Auto-seed if database is empty
 echo ""
-read -p "$(echo -e ${YELLOW}Do you want to seed the database with sample data? [y/N]:${NC} )" -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Seeding database... This may take 20-30 minutes!${NC}"
-    docker compose -f $COMPOSE_FILE exec -T app npm run seed
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Database seeded successfully${NC}"
-    else
-        echo -e "${RED}❌ Seeding failed (this is optional, app will still work)${NC}"
-    fi
+echo -e "${BLUE}[7/7]${NC} Checking database seed..."
+echo -e "${YELLOW}Note: Seed runs automatically only if database is empty${NC}"
+docker compose -f $COMPOSE_FILE exec -T app npm run seed
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Database seed check complete${NC}"
 else
-    echo -e "${YELLOW}Skipping database seed${NC}"
+    echo -e "${YELLOW}⚠️  Seed check completed with warnings (app will still work)${NC}"
 fi
 
 # Final status check
